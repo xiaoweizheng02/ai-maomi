@@ -1,0 +1,54 @@
+<view class="container">
+  <view class="header">
+    <view class="header-icon">
+      <text style="font-size: 80rpx;">🐾</text>
+    </view>
+    <text class="title">动物声音翻译机</text>
+    <text class="subtitle">长按识别狗和猫的叫声，翻译成中文</text>
+  </view>
+
+  <view class="animal-cards">
+    <!-- 狗的入口 -->
+    <view 
+      id="dog-card" 
+      class="animal-card dog-card"
+      bindlongpress="startRecording"
+      data-animal="dog"
+    >
+      <view class="paw-icon">🐶</view>
+      <text class="animal-title">狗</text>
+      <text class="animal-subtitle">长按识别狗叫声</text>
+      <view id="dog-recording" class="recording-indicator" wx:if="{{recordingAnimal === 'dog'}}">
+        <view class="recording-animation"></view>
+      </view>
+    </view>
+
+    <!-- 猫的入口 -->
+    <view 
+      id="cat-card" 
+      class="animal-card cat-card"
+      bindlongpress="startRecording"
+      data-animal="cat"
+    >
+      <view class="paw-icon">🐱</view>
+      <text class="animal-title">猫</text>
+      <text class="animal-subtitle">长按识别猫叫声</text>
+      <view id="cat-recording" class="recording-indicator" wx:if="{{recordingAnimal === 'cat'}}">
+        <view class="recording-animation"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 翻译结果 -->
+  <view id="translation-result" class="translation-box" wx:if="{{showTranslation}}">
+    <view class="translation-header">
+      <text class="translation-icon">💬</text>
+      <text class="translation-title">翻译结果</text>
+    </view>
+    <text class="translation-text">{{translationText}}</text>
+  </view>
+
+  <view class="footer">
+    <text class="footer-text">动物声音翻译机 © 2026</text>
+  </view>
+</view>

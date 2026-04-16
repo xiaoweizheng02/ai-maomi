@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动物声音翻译机</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        dark: '#292F36',
+                        light: '#F7FFF7',
+                        dogPrimary: '#FF9F1C',
+                        dogSecondary: '#E76F51',
+                        catPrimary: '#8338EC',
+                        catSecondary: '#3A86FF'
+                    },
+                    fontFamily: {
+                        sans: ['PingFang SC', 'Helvetica Neue', 'Arial', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        'result': '0 15px 30px rgba(0, 0, 0, 0.1)'
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .animal-card {
+                @apply relative flex flex-col items-center justify-center p-10 rounded-3xl cursor-pointer transition-all duration-300 shadow-card;
+            }
+            .animal-card:hover {
+                @apply shadow-card-hover transform -translate-y-1;
+            }
+            .animal-card:active {
+                @apply transform scale-95;
+            }
+            .dog-card {
+                @apply bg-gradient-to-br from-dogPrimary to-dogSecondary;
+            }
+            .cat-card {
+                @apply bg-gradient-to-br from-catPrimary to-catSecondary;
+            }
+            .recording-indicator {
+                @apply absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-3xl z-10;
+            }
+            .recording-animation {
+                @apply w-20 h-20 border-4 border-t-transparent border-white rounded-full animate-spin;
+            }
+            .translation-box {
+                @apply mt-8 p-6 bg-white rounded-xl shadow-result;
+            }
+            .paw-icon {
+                @apply text-8xl mb-6 animate-bounce-slow;
+            }
+            .floating-element {
+                animation: float 3s ease-in-out infinite;
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+                100% { transform: translateY(0px); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-light to-blue-50 min-h-screen flex flex-col items-center py-12 px-4">
+    <header class="w-full max-w-md text-center mb-12">
+        <div class="mb-6 floating-element">
+            <i class="fa fa-paw text-7xl text-primary"></i>
+        </div>
+        <h1 class="text-4xl font-bold text-dark mb-4">🐾 动物声音翻译机 🐾</h1>
+        <p class="text-lg text-gray-600 mb-2">长按识别狗和猫的叫声</p>
+        <p class="text-md text-gray-500">让我们一起听懂动物的语言吧！</p>
+    </header>
+
+    <main class="w-full max-w-md">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- 狗的入口 -->
+            <div id="dog-card" class="animal-card dog-card text-white">
+                <div class="paw-icon">🐶</div>
+                <h2 class="text-2xl font-bold mb-3">狗狗</h2>
+                <p class="text-sm opacity-90 mb-6">长按我开始录音</p>
+                <div id="dog-recording" class="recording-indicator hidden">
+                    <div class="recording-animation"></div>
+                </div>
+            </div>
+
+            <!-- 猫的入口 -->
+            <div id="cat-card" class="animal-card cat-card text-white">
+                <div class="paw-icon">🐱</div>
+                <h2 class="text-2xl font-bold mb-3">猫咪</h2>
+                <p class="text-sm opacity-90 mb-6">长按我开始录音</p>
+                <div id="cat-recording" class="recording-indicator hidden">
+                    <div class="recording-animation"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 翻译结果 -->
+        <div id="translation-result" class="translation-box hidden">
+            <div class="flex items-center mb-4">
+                <i class="fa fa-comment-o text-primary text-xl mr-3"></i>
+                <h3 class="text-xl font-bold text-dark">翻译结果</h3>
+            </div>
+            <div class="bg-light p-4 rounded-lg border-2 border-secondary">
+                <p id="translation-text" class="text-gray-700 text-lg leading-relaxed"></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-12 text-center text-gray-500 text-sm">
+        <p>🐾 动物声音翻译机 © 2026 🐾</p>
+    </footer>
+
+    <script>
+        // 模拟动物声音翻译数据
+        const dogTranslations = [
+            "汪汪！我很开心！",
+            "汪汪汪！有陌生人靠近！",
+            "呜汪呜汪！我饿了！",
+            "嗷呜！我很兴奋！",
+            "哼唧哼唧！我想玩！",
+            "汪汪！主人，快陪我！",
+            "呜汪！我害怕！",
+            "汪汪汪！别碰我的东西！"
+        ];
+
+        const catTranslations = [
+            "喵喵！我想撒娇！",
+            "喵呜！我饿了！",
+            "咕噜咕噜！我很舒服！",
+            "喵喵喵！快陪我玩！",
+            "喵～！我要出去！",
+            "嘶嘶！离我远点！",
+            "喵呜！好无聊啊！",
+            "咕噜！谢谢你的爱抚！"
+        ];
+
+        // 获取DOM元素
+        const dogCard = document.getElementById('dog-card');
+        const catCard = document.getElementById('cat-card');
+        const dogRecording = document.getElementById('dog-recording');
+        const catRecording = document.getElementById('cat-recording');
+        const translationResult = document.getElementById('translation-result');
+        const translationText = document.getElementById('translation-text');
+
+        // 录音相关变量
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let currentAnimal = null;
+
+        // 开始录音
+        function startRecording(animal) {
+            currentAnimal = animal;
+            isRecording = true;
+            
+            // 显示录音指示器
+            if (animal === 'dog') {
+                dogRecording.classList.remove('hidden');
+            } else if (animal === 'cat') {
+                catRecording.classList.remove('hidden');
+            }
+
+            // 模拟录音过程（实际项目中应该使用MediaRecorder API）
+            setTimeout(() => {
+                stopRecording();
+            }, 3000); // 模拟3秒录音
+        }
+
+        // 停止录音
+        function stopRecording() {
+            isRecording = false;
+            
+            // 隐藏录音指示器
+            dogRecording.classList.add('hidden');
+            catRecording.classList.add('hidden');
+
+            // 模拟翻译结果
+            setTimeout(() => {
+                showTranslation();
+            }, 500);
+        }
+
+        // 显示翻译结果
+        function showTranslation() {
+            let translations;
+            if (currentAnimal === 'dog') {
+                translations = dogTranslations;
+            } else if (currentAnimal === 'cat') {
+                translations = catTranslations;
+            }
+
+            // 随机选择一个翻译结果
+            const randomIndex = Math.floor(Math.random() * translations.length);
+            translationText.textContent = translations[randomIndex];
+            translationResult.classList.remove('hidden');
+
+            // 5秒后隐藏翻译结果
+            setTimeout(() => {
+                translationResult.classList.add('hidden');
+            }, 5000);
+        }
+
+        // 为狗卡片添加长按事件
+        let dogLongPressTimer;
+        dogCard.addEventListener('mousedown', () => {
+            dogLongPressTimer = setTimeout(() => {
+                startRecording('dog');
+            }, 500);
+        });
+
+        dogCard.addEventListener('mouseup', () => {
+            clearTimeout(dogLongPressTimer);
+        });
+
+        dogCard.addEventListener('mouseleave', () => {
+            clearTimeout(dogLongPressTimer);
+        });
+
+        // 为猫卡片添加长按事件
+        let catLongPressTimer;
+        catCard.addEventListener('mousedown', () => {
+            catLongPressTimer = setTimeout(() => {
+                startRecording('cat');
+            }, 500);
+        });
+
+        catCard.addEventListener('mouseup', () => {
+            clearTimeout(catLongPressTimer);
+        });
+
+        catCard.addEventListener('mouseleave', () => {
+            clearTimeout(catLongPressTimer);
+        });
+
+        // 移动端触摸事件
+        dogCard.addEventListener('touchstart', () => {
+            dogLongPressTimer = setTimeout(() => {
+                startRecording('dog');
+            }, 500);
+        });
+
+        dogCard.addEventListener('touchend', () => {
+            clearTimeout(dogLongPressTimer);
+        });
+
+        catCard.addEventListener('touchstart', () => {
+            catLongPressTimer = setTimeout(() => {
+                startRecording('cat');
+            }, 500);
+        });
+
+        catCard.addEventListener('touchend', () => {
+            clearTimeout(catLongPressTimer);
+        });
+    </script>
+</body>
+</html>

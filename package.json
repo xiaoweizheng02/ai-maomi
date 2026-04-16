@@ -1,0 +1,19 @@
+{
+  "name": "animal-sound-translator",
+  "version": "1.0.0",
+  "description": "动物声音翻译机 - 识别狗和猫的叫声并翻译成中文",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": "16.x"
+  },
+  "keywords": ["animal", "sound", "translator", "pet", "voice-recognition"],
+  "author": "AI Assistant",
+  "license": "MIT"
+}
