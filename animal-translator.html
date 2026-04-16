@@ -102,7 +102,7 @@
                 <div class="paw-icon">🐶</div>
                 <h2 class="text-2xl font-bold mb-3">狗狗</h2>
                 <p class="text-sm opacity-90 mb-6">长按我开始录音</p>
-                <div id="dog-recording" class="recording-indicator hidden">
+                <div id="dog-recording" class="recording-indicator" style="display: none;">
                     <div class="recording-animation"></div>
                 </div>
             </div>
@@ -112,7 +112,7 @@
                 <div class="paw-icon">🐱</div>
                 <h2 class="text-2xl font-bold mb-3">猫咪</h2>
                 <p class="text-sm opacity-90 mb-6">长按我开始录音</p>
-                <div id="cat-recording" class="recording-indicator hidden">
+                <div id="cat-recording" class="recording-indicator" style="display: none;">
                     <div class="recording-animation"></div>
                 </div>
             </div>
@@ -174,14 +174,17 @@
 
         // 开始录音
         function startRecording(animal) {
+            console.log('开始录音:', animal);
             currentAnimal = animal;
             isRecording = true;
             
             // 显示录音指示器
             if (animal === 'dog') {
-                dogRecording.classList.remove('hidden');
+                dogRecording.style.display = 'flex';
+                catRecording.style.display = 'none';
             } else if (animal === 'cat') {
-                catRecording.classList.remove('hidden');
+                catRecording.style.display = 'flex';
+                dogRecording.style.display = 'none';
             }
 
             // 模拟录音过程（实际项目中应该使用MediaRecorder API）
@@ -192,11 +195,12 @@
 
         // 停止录音
         function stopRecording() {
+            console.log('停止录音');
             isRecording = false;
             
             // 隐藏录音指示器
-            dogRecording.classList.add('hidden');
-            catRecording.classList.add('hidden');
+            dogRecording.style.display = 'none';
+            catRecording.style.display = 'none';
 
             // 模拟翻译结果
             setTimeout(() => {
@@ -206,16 +210,22 @@
 
         // 显示翻译结果
         function showTranslation() {
+            console.log('显示翻译结果，动物类型:', currentAnimal);
             let translations;
             if (currentAnimal === 'dog') {
                 translations = dogTranslations;
             } else if (currentAnimal === 'cat') {
                 translations = catTranslations;
+            } else {
+                console.error('没有选择动物类型');
+                return;
             }
 
             // 随机选择一个翻译结果
             const randomIndex = Math.floor(Math.random() * translations.length);
-            translationText.textContent = translations[randomIndex];
+            const translation = translations[randomIndex];
+            console.log('翻译结果:', translation);
+            translationText.textContent = translation;
             translationResult.classList.remove('hidden');
 
             // 5秒后隐藏翻译结果
